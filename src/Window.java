@@ -22,6 +22,7 @@ public class Window extends JFrame {
     JLabel result_desc;
     JButton buyStockBtn;
     JLabel currentDate;
+    JPanel playerStocksPanel;
 
     ArrayList<JLabel> playerStocksLabels = new ArrayList<>();
 
@@ -110,21 +111,25 @@ public class Window extends JFrame {
     }
 
     private void init_playerStocks() {
-        JPanel playerStocksPanel = new JPanel();
+        playerStocksPanel = new JPanel();
         playerStocksPanel.setLayout(new BoxLayout(playerStocksPanel, BoxLayout.Y_AXIS));
         add(playerStocksPanel, BorderLayout.EAST);
 
         for (Stock stock : Stock.ALL) {
-            JLabel stockLabel = new JLabel(stock.symbol + " $100.00 (^25.4%)");
-            playerStocksLabels.add(stockLabel);
-            playerStocksPanel.add(stockLabel);
+            playerStocksPanel_addStock(stock);
         }
+    }
+
+    private void playerStocksPanel_addStock(Stock stock){
+        JLabel stockLabel = new JLabel(stock.symbol +" "+ stock.getPriceString());
+        playerStocksLabels.add(stockLabel);
+        playerStocksPanel.add(stockLabel);
     }
 
     public void updatePlayerStocks() {
         for (int i = 0; i < Stock.ALL.size(); i++) {
             Stock stock = Stock.ALL.get(i);
-            playerStocksLabels.get(i).setText(stock.symbol + stock.getPriceString());
+            playerStocksLabels.get(i).setText(stock.symbol +" "+ stock.getPriceString());
         }
     }
 
@@ -150,6 +155,7 @@ public class Window extends JFrame {
 
     private void buyStock() {
         App.db.saveStock(searchedStock);
+        playerStocksPanel_addStock(searchedStock);
     }
 
     private void changeClockSpeed(int speed) {

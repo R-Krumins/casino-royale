@@ -14,18 +14,22 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class DB {
+    //infro for DB connection
+    private String url = "jdbc:postgresql://localhost:5432/stocks";
+    private String user = "postgres";
+    private String password = "admin";
+    
+    
     private Connection con;
     private Statement stmt;
     private PreparedStatement preparedStmt;
     private String dbName = "stocks";
-    private String user = "postgres";
-    private String password = "guest";
+    
 
     public DB() {
         try {
             String params = "?useSSL=false&autoReconnect=true&allowMultiQueries=true";
-            this.con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + dbName + params,
-                    user, password);
+            this.con = DriverManager.getConnection(url + params, user, password);
             this.stmt = this.con.createStatement();
             System.out.println("Successfully established connection with DB " + dbName);
         } catch (Exception e) {
