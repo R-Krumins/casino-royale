@@ -4,7 +4,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.sql.Date;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class DB {
     private Connection con;
@@ -39,6 +46,26 @@ public class DB {
             preparedStmt.executeUpdate();
             System.out.println("Saved " + stock.symbol + " to DB.");
         } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void savePriceHistory(HashMap<LocalDate, Double> history, String stockSymbol) {
+        String query = "INSERT INTO pricehistory VALUES (?,?,?)";
+
+        try {
+            preparedStmt = con.prepareStatement(query);
+
+            for (Map.Entry<LocalDate, Double> entry : history.entrySet()) {
+                preparedStmt.setDate(1, Date.valueOf(entry.getKey()));
+                preparedStmt.setString(2, stockSymbol);
+                preparedStmt.setDouble(3, entry.getValue());
+                preparedStmt.addBatch();
+            }
+
+            preparedStmt.executeBatch();
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

@@ -31,7 +31,7 @@ public class Stock {
         Stock.ALL = App.db.getAllStocks();
     }
 
-    public String getPriceString(){
+    public String getPriceString() {
         return "$" + dFormater.format(this.price);
     }
 

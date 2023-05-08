@@ -1,5 +1,9 @@
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -60,12 +64,26 @@ public class WebScraper {
         }
     }
 
-    public static JSONArray getStockHistory(String stock, Date date) {
+    public static HashMap<LocalDate, Double> getStockHistory(String stock, Date date) {
         String url = "https://api.nasdaq.com/api/quote/" + stock + "/chart?assetclass=stocks&fromdate="
-                + formatter.format(date) + "&todate=2023-05-06";
+                + formatter.format(date) + "&todate=2023-05-08";
 
         JSONObject response = makeRequest(url);
-        return response.getJSONObject("data").getJSONArray("chart");
+        JSONArray historyJSON = response.getJSONObject("data").getJSONArray("chart");
+
+        HashMap<LocalDate, Double> history = new HashMap<>();
+
+        for (int i = 0; i < historyJSON.length(); i++) {
+            JSONObject point = historyJSON.getJSONObject(i);
+            long epoch = point.getLong("x");
+            // epoch must me rounded to that time is 00:00
+            LocalDate pointDate = Instant.ofEpochMilli(epoch).atZone(ZoneId.systemDefault()).toLocalDate();
+            Double pointPrice = point.getDouble("y");
+
+            history.put(pointDate, pointPrice);
+        }
+
+        return history;
     }
 
     private static JSONObject getTestResponse() {
