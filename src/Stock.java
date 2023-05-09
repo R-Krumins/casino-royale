@@ -53,14 +53,12 @@ public class Stock {
             getAndSavePriceHistory(gameCurrentDate, fromDate);
 
         if(toDate.isBefore(gameEndDate))
-            getAndSavePriceHistory(toDate, gameEndDate);
-        else if(toDate.isAfter(gameEndDate))
-            getAndSavePriceHistory(gameEndDate, toDate);       
+            getAndSavePriceHistory(toDate, gameEndDate);    
     }
 
     private void getAndSavePriceHistory(LocalDate fromDate, LocalDate toDate){
         HashMap<LocalDate, Double> history = WebScraper.getStockHistory(this.symbol, fromDate, toDate);
-        App.db.savePriceHistory(history, this.symbol);
+        App.db.savePriceHistory(history, this.symbol, fromDate, toDate);
     }
 
     public static void cacheNext(){

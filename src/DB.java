@@ -84,7 +84,7 @@ public class DB {
         return null;
     }
 
-    public void savePriceHistory(HashMap<LocalDate, Double> history, String stockSymbol) {
+    public void savePriceHistory(HashMap<LocalDate, Double> history, String stockSymbol, LocalDate startDate, LocalDate endDate) {
         String query = "INSERT INTO pricehistory VALUES (?,?,?)";
 
         try {
@@ -102,6 +102,25 @@ public class DB {
             e.printStackTrace();
         }
 
+       
+        updatStockHistoryDates(stockSymbol, startDate, endDate);
+    }
+
+    private void updatStockHistoryDates(String stockSymbol, LocalDate startDate, LocalDate endDate){
+        String query = "UPDATE stocks SET history_startdate = ?::date, history_enddate = ?::date WHERE symbol = ?;";
+
+        try {
+            preparedStmt = con.prepareStatement(query);
+
+            preparedStmt.setString(1, startDate.toString());
+            preparedStmt.setString(2, endDate.toString());
+            preparedStmt.setString(3, stockSymbol);
+
+            preparedStmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Unable to update "+stockSymbol+" history dates");
+            e.printStackTrace();
+        }
     }
 
     public ArrayList<Stock> getAllStocks() {
