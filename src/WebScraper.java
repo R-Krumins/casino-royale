@@ -2,6 +2,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -11,7 +12,7 @@ import org.jsoup.Jsoup;
 
 public class WebScraper {
 
-    private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-dd-MM");
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-dd-MM");
 
     public static Stock getStock(String stock) {
         String url = "https://api.nasdaq.com/api/company/" + stock + "/company-profile";
@@ -64,9 +65,10 @@ public class WebScraper {
         }
     }
 
-    public static HashMap<LocalDate, Double> getStockHistory(String stock, Date date) {
-        String url = "https://api.nasdaq.com/api/quote/" + stock + "/chart?assetclass=stocks&fromdate="
-                + formatter.format(date) + "&todate=2023-05-08";
+    public static HashMap<LocalDate, Double> getStockHistory(String stockSymbol, LocalDate fromDate, LocalDate toDate) {
+        String url = "https://api.nasdaq.com/api/quote/" + stockSymbol 
+                + "/chart?assetclass=stocks&fromdate=" + formatter.format(fromDate) 
+                + "&todate="+ formatter.format(toDate);
 
         JSONObject response = makeRequest(url);
         JSONArray historyJSON = response.getJSONObject("data").getJSONArray("chart");

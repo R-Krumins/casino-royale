@@ -155,6 +155,7 @@ public class Window extends JFrame {
 
     private void buyStock() {
         App.db.saveStock(searchedStock);
+        searchedStock.updatePriceHistory();
         playerStocksPanel_addStock(searchedStock);
     }
 

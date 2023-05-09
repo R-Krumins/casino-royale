@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +56,34 @@ public class DB {
 
     }
 
+    public LocalDate getStock_history_startDate(String stockSymbol){
+        return getStockHistoryDate("history_startdate", stockSymbol);
+    }
+
+    public LocalDate getStock_history_endDate(String stockSymbol){
+        return getStockHistoryDate("history_enddate", stockSymbol);
+    }
+
+    private LocalDate getStockHistoryDate(String dateType, String stockSymbol){
+        String query = "SELECT "+dateType+" FROM stocks WHERE symbol = ?";
+
+        try {
+            preparedStmt = con.prepareStatement(query);
+            preparedStmt.setString(1, stockSymbol);
+            ResultSet result = preparedStmt.executeQuery();
+
+            while(result.next()){
+                if(result.getDate(dateType) == null) return null;
+                else return result.getDate(dateType).toLocalDate();
+            }
+        } catch (SQLException e) {
+            System.out.println("Unable to retrieve "+stockSymbol+" history "+dateType);
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     public void savePriceHistory(HashMap<LocalDate, Double> history, String stockSymbol) {
         String query = "INSERT INTO pricehistory VALUES (?,?,?)";
 
@@ -97,6 +126,50 @@ public class DB {
 
         return stocks;
     }
+
+    public HashMap<LocalDate, HashMap<Stock, Double>> getPriceHistory(LocalDate startDate, LocalDate endDate){
+        String query = "SELECT * FROM pricehistory WHERE date > ?::date AND date <= ?::date;";
+        ResultSet result = null;
+        
+        //retrieve price history
+        try {
+            preparedStmt = con.prepareStatement(query);
+            preparedStmt.setString(1, startDate.toString());
+            preparedStmt.setString(2, endDate.toString());
+            result = preparedStmt.executeQuery();
+        } catch (SQLException e) {
+            System.out.println("Unable to retrieve price history");
+            e.printStackTrace();
+            return null;
+        }
+
+       
+        //process price history
+        //1. prepare history
+        HashMap<LocalDate, HashMap<Stock, Double>> history = new HashMap<>();
+        for(int i = 1; i <= Stock.getCacheSize(); i++){
+            history.put(startDate.plusDays(i), new HashMap<Stock, Double>());
+        }
+
+        //2. populate history with DB data
+        try {
+            while(result.next()){ 
+                LocalDate date = result.getDate("date").toLocalDate();
+                Stock stock = Stock.getBySymbol(result.getString("symbol"));
+                Double price = result.getDouble("price");
+                
+                history.get(date).put(stock, price);
+            }
+        } catch (SQLException e) {
+            System.out.println("Unable to proccess price history");
+            e.printStackTrace();
+            return null;
+        }
+        
+        
+        
+        return history;
+    } 
 
     public void executeUpdate(String query) throws SQLException {
         this.stmt.executeUpdate(query);

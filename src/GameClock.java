@@ -2,11 +2,13 @@ import java.time.LocalDate;
 
 public class GameClock extends Thread {
 
-    public LocalDate currentDate;
+    private LocalDate currentDate; //current game date
+    private LocalDate endDate; //end date for game (real world current time)
     private boolean isPaused = true;;
 
     public GameClock(LocalDate currentDate) {
         this.currentDate = currentDate;
+        this.endDate = LocalDate.now();
     }
 
     @Override
@@ -29,15 +31,21 @@ public class GameClock extends Thread {
 
     }
 
+    public LocalDate getCurrentDate(){
+        return this.currentDate;
+    }
+
+    public LocalDate getEndDate(){
+        return this.endDate;
+    }
+
     private void updateDate() {
         currentDate = currentDate.plusDays(1);
         App.window.setCurrentDate(currentDate.toString());
     }
 
     private void updateStocks() {
-        Stock.ALL.forEach(stock -> {
-            stock.price += 0.1;
-        });
+        Stock.updatePrices(currentDate);
         App.window.updatePlayerStocks();
     }
 
