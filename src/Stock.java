@@ -16,14 +16,15 @@ public class Stock {
     String industry;
     String description;
     double price;
+    LocalDate oldestAvalaibeDate;
 
     private static final DecimalFormat dFormater = new DecimalFormat("0.00");
     public static ArrayList<Stock> ALL = new ArrayList<>();
-    
-    //cache and its parameters
+
+    // cache and its parameters
     private static HashMap<LocalDate, HashMap<Stock, Double>> cache;
     private static LocalDate cachedMaxDate = App.gameClock.getCurrentDate();
-    private static int chacheSize = 365; //in days
+    private static int chacheSize = 365; // in days
 
     public Stock(String symbol, String companyName, String industry, String description) {
         this.symbol = symbol;
@@ -34,40 +35,39 @@ public class Stock {
     }
 
     public void updatePriceHistory() {
-        //game dates
+        // game dates
         LocalDate gameCurrentDate = App.gameClock.getCurrentDate();
-        LocalDate gameEndDate = App.gameClock.getEndDate();    
-        //stock dates in db
+        LocalDate gameEndDate = App.gameClock.getEndDate();
+        // stock dates in db
         LocalDate fromDate = App.db.getStock_history_startDate(this.symbol);
         LocalDate toDate = App.db.getStock_history_endDate(this.symbol);
 
-
-        if(fromDate == null){
+        if (fromDate == null) {
             getAndSavePriceHistory(gameCurrentDate, gameEndDate);
             return;
         }
-            
-        if(fromDate.isBefore(gameCurrentDate))
+
+        if (fromDate.isBefore(gameCurrentDate))
             getAndSavePriceHistory(fromDate, gameCurrentDate);
-        else if(fromDate.isAfter(gameCurrentDate))
+        else if (fromDate.isAfter(gameCurrentDate))
             getAndSavePriceHistory(gameCurrentDate, fromDate);
 
-        if(toDate.isBefore(gameEndDate))
-            getAndSavePriceHistory(toDate, gameEndDate);    
+        if (toDate.isBefore(gameEndDate))
+            getAndSavePriceHistory(toDate, gameEndDate);
     }
 
-    private void getAndSavePriceHistory(LocalDate fromDate, LocalDate toDate){
+    private void getAndSavePriceHistory(LocalDate fromDate, LocalDate toDate) {
         HashMap<LocalDate, Double> history = WebScraper.getStockHistory(this.symbol, fromDate, toDate);
         App.db.savePriceHistory(history, this.symbol, fromDate, toDate);
     }
 
-    public static void cacheNext(){
+    public static void cacheNext() {
         LocalDate nextMaxdate = cachedMaxDate.plusDays(chacheSize);
         cache = App.db.getPriceHistory(cachedMaxDate, nextMaxdate);
         cachedMaxDate = nextMaxdate;
     }
 
-    public static void updatePrices(LocalDate date){
+    public static void updatePrices(LocalDate date) {
         cache.get(date).forEach((stock, price) -> {
             stock.price = price;
         });
@@ -80,16 +80,17 @@ public class Stock {
     public String getPriceString() {
         return "$" + dFormater.format(this.price);
     }
-    
-    public static int getCacheSize(){
+
+    public static int getCacheSize() {
         return Stock.chacheSize;
     }
 
-    public static Stock getBySymbol(String symbol){
-        for(Stock stock : Stock.ALL){
-            if(stock.symbol.equals(symbol)) return stock;
+    public static Stock getBySymbol(String symbol) {
+        for (Stock stock : Stock.ALL) {
+            if (stock.symbol.equals(symbol))
+                return stock;
         }
-        
+
         return null;
     }
 }

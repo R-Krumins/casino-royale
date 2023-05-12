@@ -14,8 +14,8 @@ public class WebScraper {
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-dd-MM");
 
-    public static Stock getStock(String stock) {
-        String url = "https://api.nasdaq.com/api/company/" + stock + "/company-profile";
+    public static Stock getStock(String stockSymbol) {
+        String url = "https://api.nasdaq.com/api/company/" + stockSymbol + "/company-profile";
         JSONObject response = makeRequest(url);
 
         JSONObject validStock;
@@ -30,7 +30,15 @@ public class WebScraper {
         String industry = validStock.getJSONObject("Industry").getString("value");
         String description = validStock.getJSONObject("CompanyDescription").getString("value");
 
-        return new Stock(symbol, companyName, industry, description);
+        Stock stock = new Stock(symbol, companyName, industry, description);
+
+        try {
+            stock.oldestAvalaibeDate = WebScraper.getStockOldestAvalibleDate(stockSymbol);
+        } catch (Exception e) {
+            System.out.println("Unable to retrieve info for oldest avaliable date for " + stockSymbol);
+        }
+
+        return stock;
 
     }
 
@@ -51,7 +59,7 @@ public class WebScraper {
         try {
             String response = Jsoup
                     .connect(url)
-                    .timeout(3000)
+                    .timeout(5000)
                     .userAgent("Mozilla/5.0 (Windows 10; Win64; x64)")
                     .ignoreContentType(true)
                     .execute()
@@ -66,9 +74,9 @@ public class WebScraper {
     }
 
     public static HashMap<LocalDate, Double> getStockHistory(String stockSymbol, LocalDate fromDate, LocalDate toDate) {
-        String url = "https://api.nasdaq.com/api/quote/" + stockSymbol 
-                + "/chart?assetclass=stocks&fromdate=" + formatter.format(fromDate) 
-                + "&todate="+ formatter.format(toDate);
+        String url = "https://api.nasdaq.com/api/quote/" + stockSymbol
+                + "/chart?assetclass=stocks&fromdate=" + formatter.format(fromDate)
+                + "&todate=" + formatter.format(toDate);
 
         JSONObject response = makeRequest(url);
         JSONArray historyJSON = response.getJSONObject("data").getJSONArray("chart");
@@ -86,6 +94,16 @@ public class WebScraper {
         }
 
         return history;
+    }
+
+    public static LocalDate getStockOldestAvalibleDate(String stockSymbol) {
+        String url = "https://api.nasdaq.com/api/quote/" + stockSymbol + "/chart?assetclass=stocks&fromdate=1900-01-01";
+
+        JSONObject response = makeRequest(url);
+        long epoch = response.getJSONObject("data").getJSONArray("chart").getJSONObject(0).getLong("x");
+        LocalDate date = Instant.ofEpochMilli(epoch).atZone(ZoneId.systemDefault()).toLocalDate();
+        return date;
+
     }
 
     private static JSONObject getTestResponse() {

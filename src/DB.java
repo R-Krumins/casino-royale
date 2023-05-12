@@ -15,17 +15,15 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class DB {
-    //infro for DB connection
+    // info for DB connection
     private String url = "jdbc:postgresql://localhost:5432/stocks";
     private String user = "postgres";
-    private String password = "admin";
-    
-    
+    private String password = "guest";
+
     private Connection con;
     private Statement stmt;
     private PreparedStatement preparedStmt;
     private String dbName = "stocks";
-    
 
     public DB() {
         try {
@@ -56,35 +54,38 @@ public class DB {
 
     }
 
-    public LocalDate getStock_history_startDate(String stockSymbol){
+    public LocalDate getStock_history_startDate(String stockSymbol) {
         return getStockHistoryDate("history_startdate", stockSymbol);
     }
 
-    public LocalDate getStock_history_endDate(String stockSymbol){
+    public LocalDate getStock_history_endDate(String stockSymbol) {
         return getStockHistoryDate("history_enddate", stockSymbol);
     }
 
-    private LocalDate getStockHistoryDate(String dateType, String stockSymbol){
-        String query = "SELECT "+dateType+" FROM stocks WHERE symbol = ?";
+    private LocalDate getStockHistoryDate(String dateType, String stockSymbol) {
+        String query = "SELECT " + dateType + " FROM stocks WHERE symbol = ?";
 
         try {
             preparedStmt = con.prepareStatement(query);
             preparedStmt.setString(1, stockSymbol);
             ResultSet result = preparedStmt.executeQuery();
 
-            while(result.next()){
-                if(result.getDate(dateType) == null) return null;
-                else return result.getDate(dateType).toLocalDate();
+            while (result.next()) {
+                if (result.getDate(dateType) == null)
+                    return null;
+                else
+                    return result.getDate(dateType).toLocalDate();
             }
         } catch (SQLException e) {
-            System.out.println("Unable to retrieve "+stockSymbol+" history "+dateType);
+            System.out.println("Unable to retrieve " + stockSymbol + " history " + dateType);
             e.printStackTrace();
         }
 
         return null;
     }
 
-    public void savePriceHistory(HashMap<LocalDate, Double> history, String stockSymbol, LocalDate startDate, LocalDate endDate) {
+    public void savePriceHistory(HashMap<LocalDate, Double> history, String stockSymbol, LocalDate startDate,
+            LocalDate endDate) {
         String query = "INSERT INTO pricehistory VALUES (?,?,?)";
 
         try {
@@ -102,11 +103,10 @@ public class DB {
             e.printStackTrace();
         }
 
-       
         updatStockHistoryDates(stockSymbol, startDate, endDate);
     }
 
-    private void updatStockHistoryDates(String stockSymbol, LocalDate startDate, LocalDate endDate){
+    private void updatStockHistoryDates(String stockSymbol, LocalDate startDate, LocalDate endDate) {
         String query = "UPDATE stocks SET history_startdate = ?::date, history_enddate = ?::date WHERE symbol = ?;";
 
         try {
@@ -118,7 +118,7 @@ public class DB {
 
             preparedStmt.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("Unable to update "+stockSymbol+" history dates");
+            System.out.println("Unable to update " + stockSymbol + " history dates");
             e.printStackTrace();
         }
     }
@@ -146,11 +146,11 @@ public class DB {
         return stocks;
     }
 
-    public HashMap<LocalDate, HashMap<Stock, Double>> getPriceHistory(LocalDate startDate, LocalDate endDate){
+    public HashMap<LocalDate, HashMap<Stock, Double>> getPriceHistory(LocalDate startDate, LocalDate endDate) {
         String query = "SELECT * FROM pricehistory WHERE date > ?::date AND date <= ?::date;";
         ResultSet result = null;
-        
-        //retrieve price history
+
+        // retrieve price history
         try {
             preparedStmt = con.prepareStatement(query);
             preparedStmt.setString(1, startDate.toString());
@@ -162,21 +162,20 @@ public class DB {
             return null;
         }
 
-       
-        //process price history
-        //1. prepare history
+        // process price history
+        // 1. prepare history
         HashMap<LocalDate, HashMap<Stock, Double>> history = new HashMap<>();
-        for(int i = 1; i <= Stock.getCacheSize(); i++){
+        for (int i = 1; i <= Stock.getCacheSize(); i++) {
             history.put(startDate.plusDays(i), new HashMap<Stock, Double>());
         }
 
-        //2. populate history with DB data
+        // 2. populate history with DB data
         try {
-            while(result.next()){ 
+            while (result.next()) {
                 LocalDate date = result.getDate("date").toLocalDate();
                 Stock stock = Stock.getBySymbol(result.getString("symbol"));
                 Double price = result.getDouble("price");
-                
+
                 history.get(date).put(stock, price);
             }
         } catch (SQLException e) {
@@ -184,11 +183,9 @@ public class DB {
             e.printStackTrace();
             return null;
         }
-        
-        
-        
+
         return history;
-    } 
+    }
 
     public void executeUpdate(String query) throws SQLException {
         this.stmt.executeUpdate(query);

@@ -17,6 +17,7 @@ public class Window extends JFrame {
 
     JTextField searchStockBox;
     JLabel result_symbol;
+    JLabel result_wentPublicDate;
     JLabel result_companyName;
     JLabel result_industry;
     JLabel result_desc;
@@ -63,10 +64,12 @@ public class Window extends JFrame {
         // bottom;
         result_symbol = new JLabel();
         result_companyName = new JLabel();
+        result_wentPublicDate = new JLabel();
         result_industry = new JLabel();
         result_desc = new JLabel();
         stockLookUpPanel.add(result_symbol);
         stockLookUpPanel.add(result_companyName);
+        stockLookUpPanel.add(result_wentPublicDate);
         stockLookUpPanel.add(result_industry);
         stockLookUpPanel.add(result_desc);
 
@@ -120,8 +123,8 @@ public class Window extends JFrame {
         }
     }
 
-    private void playerStocksPanel_addStock(Stock stock){
-        JLabel stockLabel = new JLabel(stock.symbol +" "+ stock.getPriceString());
+    private void playerStocksPanel_addStock(Stock stock) {
+        JLabel stockLabel = new JLabel(stock.symbol + " " + stock.getPriceString());
         playerStocksLabels.add(stockLabel);
         playerStocksPanel.add(stockLabel);
     }
@@ -129,7 +132,7 @@ public class Window extends JFrame {
     public void updatePlayerStocks() {
         for (int i = 0; i < Stock.ALL.size(); i++) {
             Stock stock = Stock.ALL.get(i);
-            playerStocksLabels.get(i).setText(stock.symbol +" "+ stock.getPriceString());
+            playerStocksLabels.get(i).setText(stock.symbol + " " + stock.getPriceString());
         }
     }
 
@@ -139,6 +142,7 @@ public class Window extends JFrame {
         if (searchedStock != null) {
             result_symbol.setText(searchedStock.symbol);
             result_companyName.setText(searchedStock.companyName);
+            result_wentPublicDate.setText("Went public: " + searchedStock.oldestAvalaibeDate);
             result_industry.setText(searchedStock.industry);
             result_desc.setText("<html>" + searchedStock.description + "</html>");
             buyStockBtn.setVisible(true);
@@ -146,6 +150,7 @@ public class Window extends JFrame {
             searchedStock = null;
             result_symbol.setText("No such stock exists!");
             result_companyName.setText("");
+            result_wentPublicDate.setText("");
             result_industry.setText("");
             result_desc.setText("");
             buyStockBtn.setVisible(false);
