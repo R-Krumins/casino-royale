@@ -146,8 +146,43 @@ public class DB {
         return stocks;
     }
 
+    public Stock getStock(String stockSymbol) {
+        Stock stock = null;
+        String query = "SELECT * FROM stocks WHERE symbol = '" + stockSymbol + "';";
+
+        try {
+            ResultSet results = stmt.executeQuery(query);
+
+            while (results.next()) {
+                String symbol = results.getString("symbol");
+                String compnayName = results.getString("company_name");
+                String industry = results.getString("industry");
+                String description = results.getString("description");
+
+                stock = new Stock(symbol, compnayName, industry, description);
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return stock;
+    }
+
     public HashMap<LocalDate, HashMap<Stock, Double>> getPriceHistory(LocalDate startDate, LocalDate endDate) {
         String query = "SELECT * FROM pricehistory WHERE date > ?::date AND date <= ?::date;";
+        return _getPriceHistory(query, startDate, endDate);
+    }
+
+    public HashMap<LocalDate, HashMap<Stock, Double>> getPriceHistory(LocalDate startDate, LocalDate endDate,
+            String stockSymbol) {
+        String query = "SELECT * FROM pricehistory WHERE date > ?::date AND date <= ?::date AND symbol = '"
+                + stockSymbol + "';";
+        return _getPriceHistory(query, startDate, endDate);
+    }
+
+    private HashMap<LocalDate, HashMap<Stock, Double>> _getPriceHistory(String query, LocalDate startDate,
+            LocalDate endDate) {
         ResultSet result = null;
 
         // retrieve price history

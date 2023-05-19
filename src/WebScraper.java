@@ -13,6 +13,7 @@ import org.jsoup.Jsoup;
 public class WebScraper {
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-dd-MM");
+    private static String apiKey = "UEWDdbC-SQXSgRhsbVzH";
 
     public static Stock getStock(String stockSymbol) {
         String url = "https://api.nasdaq.com/api/company/" + stockSymbol + "/company-profile";
@@ -32,11 +33,13 @@ public class WebScraper {
 
         Stock stock = new Stock(symbol, companyName, industry, description);
 
-        try {
-            stock.oldestAvalaibeDate = WebScraper.getStockOldestAvalibleDate(stockSymbol);
-        } catch (Exception e) {
-            System.out.println("Unable to retrieve info for oldest avaliable date for " + stockSymbol);
-        }
+        // try {
+        // stock.oldestAvalaibeDate =
+        // WebScraper.getStockOldestAvalibleDate(stockSymbol);
+        // } catch (Exception e) {
+        // System.out.println("Unable to retrieve info for oldest avaliable date for " +
+        // stockSymbol);
+        // }
 
         return stock;
 
@@ -59,7 +62,7 @@ public class WebScraper {
         try {
             String response = Jsoup
                     .connect(url)
-                    .timeout(5000)
+                    .timeout(20000)
                     .userAgent("Mozilla/5.0 (Windows 10; Win64; x64)")
                     .ignoreContentType(true)
                     .execute()
@@ -75,8 +78,8 @@ public class WebScraper {
 
     public static HashMap<LocalDate, Double> getStockHistory(String stockSymbol, LocalDate fromDate, LocalDate toDate) {
         String url = "https://api.nasdaq.com/api/quote/" + stockSymbol
-                + "/chart?assetclass=stocks&fromdate=" + formatter.format(fromDate)
-                + "&todate=" + formatter.format(toDate);
+                + "/chart?assetclass=stocks&fromdate=" + fromDate
+                + "&todate=" + toDate;
 
         JSONObject response = makeRequest(url);
         JSONArray historyJSON = response.getJSONObject("data").getJSONArray("chart");

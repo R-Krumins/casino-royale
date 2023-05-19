@@ -67,6 +67,13 @@ public class Stock {
         cachedMaxDate = nextMaxdate;
     }
 
+    public static void updateCache(Stock stock) {
+        App.db.getPriceHistory(App.gameClock.getCurrentDate(), cachedMaxDate, stock.symbol).forEach((date, value) -> {
+            if (cache.get(date) != null)
+                cache.get(date).putAll(value);
+        });
+    }
+
     public static void updatePrices(LocalDate date) {
         cache.get(date).forEach((stock, price) -> {
             stock.price = price;

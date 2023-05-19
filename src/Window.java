@@ -7,7 +7,9 @@ import javax.swing.JTextField;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Window extends JFrame {
     static int WINDOW_WIDTH = 700;
@@ -17,7 +19,7 @@ public class Window extends JFrame {
 
     JTextField searchStockBox;
     JLabel result_symbol;
-    JLabel result_wentPublicDate;
+    JLabel result_price;
     JLabel result_companyName;
     JLabel result_industry;
     JLabel result_desc;
@@ -26,6 +28,7 @@ public class Window extends JFrame {
     JPanel playerStocksPanel;
 
     ArrayList<JLabel> playerStocksLabels = new ArrayList<>();
+    HashMap<LocalDate, Double> searchedStockPrices;
 
     public Window() {
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -64,12 +67,12 @@ public class Window extends JFrame {
         // bottom;
         result_symbol = new JLabel();
         result_companyName = new JLabel();
-        result_wentPublicDate = new JLabel();
+        result_price = new JLabel();
         result_industry = new JLabel();
         result_desc = new JLabel();
         stockLookUpPanel.add(result_symbol);
         stockLookUpPanel.add(result_companyName);
-        stockLookUpPanel.add(result_wentPublicDate);
+        stockLookUpPanel.add(result_price);
         stockLookUpPanel.add(result_industry);
         stockLookUpPanel.add(result_desc);
 
@@ -129,7 +132,11 @@ public class Window extends JFrame {
         playerStocksPanel.add(stockLabel);
     }
 
-    public void updatePlayerStocks() {
+    public void updatePlayerStocks(LocalDate date) {
+
+        if (searchedStockPrices != null && searchedStockPrices.get(date) != null)
+            result_price.setText("$" + searchedStockPrices.get(date).toString());
+
         for (int i = 0; i < Stock.ALL.size(); i++) {
             Stock stock = Stock.ALL.get(i);
             playerStocksLabels.get(i).setText(stock.symbol + " " + stock.getPriceString());
@@ -137,12 +144,14 @@ public class Window extends JFrame {
     }
 
     private void searchForStock() {
+
         searchedStock = WebScraper.getStock(searchStockBox.getText());
+        searchedStockPrices = WebScraper.getStockHistory(searchedStock.symbol, App.gameClock.getCurrentDate(),
+                App.gameClock.getEndDate());
 
         if (searchedStock != null) {
             result_symbol.setText(searchedStock.symbol);
             result_companyName.setText(searchedStock.companyName);
-            result_wentPublicDate.setText("Went public: " + searchedStock.oldestAvalaibeDate);
             result_industry.setText(searchedStock.industry);
             result_desc.setText("<html>" + searchedStock.description + "</html>");
             buyStockBtn.setVisible(true);
@@ -150,7 +159,7 @@ public class Window extends JFrame {
             searchedStock = null;
             result_symbol.setText("No such stock exists!");
             result_companyName.setText("");
-            result_wentPublicDate.setText("");
+            result_price.setText("");
             result_industry.setText("");
             result_desc.setText("");
             buyStockBtn.setVisible(false);
@@ -161,6 +170,8 @@ public class Window extends JFrame {
     private void buyStock() {
         App.db.saveStock(searchedStock);
         searchedStock.updatePriceHistory();
+        Stock.ALL.add(searchedStock);
+        Stock.updateCache(searchedStock);
         playerStocksPanel_addStock(searchedStock);
     }
 
