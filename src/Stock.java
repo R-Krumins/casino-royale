@@ -22,16 +22,18 @@ public class Stock {
     public static ArrayList<Stock> ALL = new ArrayList<>();
 
     // cache and its parameters
-    private static HashMap<LocalDate, HashMap<Stock, Double>> cache;
+    private static HashMap<LocalDate, HashMap<Stock, Double>> cache = new HashMap<>();
     private static LocalDate cachedMaxDate = App.gameClock.getCurrentDate();
     private static int chacheSize = 365; // in days
+    // threshold date for when chache should be updated
+    private static LocalDate cacheNextThresholdDate = App.gameClock.getCurrentDate().plusDays(chacheSize / 2);
 
     public Stock(String symbol, String companyName, String industry, String description) {
         this.symbol = symbol;
         this.companyName = companyName;
         this.industry = industry;
         this.description = description;
-        this.price = 100;
+        this.price = 0;
     }
 
     public void updatePriceHistory() {
@@ -62,9 +64,11 @@ public class Stock {
     }
 
     public static void cacheNext() {
+        System.out.println("Starting cache procedure...");
         LocalDate nextMaxdate = cachedMaxDate.plusDays(chacheSize);
-        cache = App.db.getPriceHistory(cachedMaxDate, nextMaxdate);
+        cache.putAll(App.db.getPriceHistory(cachedMaxDate, nextMaxdate));
         cachedMaxDate = nextMaxdate;
+        System.out.println("Cache updated upto " + cachedMaxDate);
     }
 
     public static void updateCache(Stock stock) {
@@ -75,6 +79,13 @@ public class Stock {
     }
 
     public static void updatePrices(LocalDate date) {
+        if (App.gameClock.getCurrentDate().isAfter(cacheNextThresholdDate)) {
+            cacheNextThresholdDate = cacheNextThresholdDate.plusDays(chacheSize);
+            new Thread(() -> {
+                cacheNext();
+            }).start();
+        }
+
         cache.get(date).forEach((stock, price) -> {
             stock.price = price;
         });
