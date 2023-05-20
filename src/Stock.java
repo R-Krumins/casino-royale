@@ -16,7 +16,11 @@ public class Stock {
     String industry;
     String description;
     double price;
+    private int count;
     LocalDate oldestAvalaibeDate;
+
+    private static double playerLiquidity = 10_000;
+    private volatile static double playerPortfolioValue = 0;
 
     private static final DecimalFormat dFormater = new DecimalFormat("0.00");
     public static ArrayList<Stock> ALL = new ArrayList<>();
@@ -34,6 +38,7 @@ public class Stock {
         this.industry = industry;
         this.description = description;
         this.price = 0;
+        this.count = 1;
     }
 
     public void updatePriceHistory() {
@@ -86,8 +91,9 @@ public class Stock {
             }).start();
         }
 
-        cache.get(date).forEach((stock, price) -> {
-            stock.price = price;
+        cache.get(date).forEach((stock, newPrice) -> {
+            playerPortfolioValue += (newPrice - stock.price) * stock.count;
+            stock.price = newPrice;
         });
     }
 
@@ -99,8 +105,29 @@ public class Stock {
         return "$" + dFormater.format(this.price);
     }
 
+    public static String getplayerLiquidity() {
+        return "$" + dFormater.format(playerLiquidity);
+    }
+
+    public static void icrementPlayerLiquidity(double value) {
+        Stock.playerLiquidity += value;
+    }
+
+    public static String getplayerPortfolioValue() {
+        return "$" + dFormater.format(playerPortfolioValue);
+    }
+
     public static int getCacheSize() {
         return Stock.chacheSize;
+    }
+
+    public void incrementCount(int value) {
+        this.count += value;
+        Stock.playerPortfolioValue += this.price * value;
+    }
+
+    public int getCount() {
+        return this.count;
     }
 
     public static Stock getBySymbol(String symbol) {

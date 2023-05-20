@@ -46,7 +46,7 @@ public class GameClock extends Thread {
 
     private void updateStocks() {
         Stock.updatePrices(currentDate);
-        App.window.updatePlayerStocks(currentDate);
+        App.window.updateWindow(currentDate);
     }
 
     private void sleep(int pauseTime) {

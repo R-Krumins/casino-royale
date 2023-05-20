@@ -26,6 +26,8 @@ public class Window extends JFrame {
     JButton buyStockBtn;
     JLabel currentDate;
     JPanel playerStocksPanel;
+    JLabel porfolioValue;
+    JLabel liquidityValue;
 
     ArrayList<JLabel> playerStocksLabels = new ArrayList<>();
     HashMap<LocalDate, Double> searchedStockPrices;
@@ -43,6 +45,7 @@ public class Window extends JFrame {
         init_stockLookUpPanel();
         init_topBar();
         init_playerStocks();
+        init_playerStatsPanel();
     }
 
     private void init_stockLookUpPanel() {
@@ -126,29 +129,56 @@ public class Window extends JFrame {
         }
     }
 
+    private void init_playerStatsPanel() {
+        JPanel playerStatsPanel = new JPanel();
+        playerStatsPanel.setLayout(new BoxLayout(playerStatsPanel, BoxLayout.Y_AXIS));
+        add(playerStatsPanel, BorderLayout.WEST);
+
+        JLabel porfolioText = new JLabel("Porfolio value:");
+        porfolioValue = new JLabel("$0");
+        JLabel liquidityText = new JLabel("Liquidity:");
+        liquidityValue = new JLabel(Stock.getplayerLiquidity());
+
+        playerStatsPanel.add(porfolioText);
+        playerStatsPanel.add(porfolioValue);
+        playerStatsPanel.add(liquidityText);
+        playerStatsPanel.add(liquidityValue);
+    }
+
     private void playerStocksPanel_addStock(Stock stock) {
         JLabel stockLabel = new JLabel(stock.symbol + " " + stock.getPriceString());
         playerStocksLabels.add(stockLabel);
         playerStocksPanel.add(stockLabel);
     }
 
-    public void updatePlayerStocks(LocalDate date) {
+    public void updateWindow(LocalDate date) {
 
         if (searchedStockPrices != null && searchedStockPrices.get(date) != null)
             result_price.setText("$" + searchedStockPrices.get(date).toString());
 
         for (int i = 0; i < Stock.ALL.size(); i++) {
             Stock stock = Stock.ALL.get(i);
-            playerStocksLabels.get(i).setText(stock.symbol + " " + stock.getPriceString());
+            playerStocksLabels.get(i)
+                    .setText(stock.symbol + " " + stock.getPriceString() + " (x" + stock.getCount() + ")");
         }
+
+        liquidityValue.setText(Stock.getplayerLiquidity());
+        porfolioValue.setText(Stock.getplayerPortfolioValue());
     }
 
     private void searchForStock() {
 
-        searchedStock = WebScraper.getStock(searchStockBox.getText());
-        searchedStockPrices = WebScraper.getStockHistory(searchedStock.symbol, App.gameClock.getCurrentDate(),
-                App.gameClock.getEndDate());
+        String search = searchStockBox.getText().toUpperCase();
+        // first check if this stock is already owned by the player
+        searchedStock = Stock.getBySymbol(search);
+        // if no find it from the web
+        if (searchedStock == null) {
+            searchedStock = WebScraper.getStock(search);
+            searchedStockPrices = WebScraper.getStockHistory(searchedStock.symbol, App.gameClock.getCurrentDate(),
+                    App.gameClock.getEndDate());
+        }
 
+        // show info for searched stock
         if (searchedStock != null) {
             result_symbol.setText(searchedStock.symbol);
             result_companyName.setText(searchedStock.companyName);
@@ -168,6 +198,13 @@ public class Window extends JFrame {
     }
 
     private void buyStock() {
+        Stock.icrementPlayerLiquidity(-searchedStock.price);
+
+        if (Stock.ALL.contains(searchedStock)) {
+            searchedStock.incrementCount(1);
+            return;
+        }
+
         App.db.saveStock(searchedStock);
         searchedStock.updatePriceHistory();
         Stock.ALL.add(searchedStock);
