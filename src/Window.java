@@ -1,11 +1,17 @@
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -31,7 +37,7 @@ public class Window extends JFrame {
     JLabel liquidityValue;
     JButton pauseBtn;
 
-    ArrayList<JLabel> playerStocksLabels = new ArrayList<>();
+    ArrayList<JLabel> playerStocks = new ArrayList<>();
     HashMap<LocalDate, Double> searchedStockPrices;
 
     public Window() {
@@ -134,7 +140,7 @@ public class Window extends JFrame {
         add(playerStocksPanel, BorderLayout.EAST);
 
         for (Stock stock : Stock.ALL) {
-            playerStocksPanel_addStock(stock);
+            playerStocksPanel.add(StockLabelFactory(stock));
         }
     }
 
@@ -154,10 +160,13 @@ public class Window extends JFrame {
         playerStatsPanel.add(liquidityValue);
     }
 
-    private void playerStocksPanel_addStock(Stock stock) {
-        JLabel stockLabel = new JLabel(stock.symbol + " " + stock.getPriceString());
-        playerStocksLabels.add(stockLabel);
-        playerStocksPanel.add(stockLabel);
+    private JLabel StockLabelFactory(Stock stock) {
+        JLabel stockLabel = new JLabel(stock.symbol + " (no data)");
+        playerStocks.add(stockLabel);
+        Border border = new CompoundBorder(new LineBorder(Color.gray, 1), new EmptyBorder(5, 10, 5, 10));
+        stockLabel.setBorder(border);
+        stockLabel.setOpaque(true);
+        return stockLabel;
     }
 
     public void updateWindow(LocalDate date) {
@@ -167,8 +176,10 @@ public class Window extends JFrame {
 
         for (int i = 0; i < Stock.ALL.size(); i++) {
             Stock stock = Stock.ALL.get(i);
-            playerStocksLabels.get(i)
-                    .setText(stock.symbol + " " + stock.getPriceString() + " (x" + stock.getCount() + ")");
+            JLabel label = playerStocks.get(i);
+
+            label.setText(stock.symbol + " " + stock.getPriceString() + " (x" + stock.getCount() + ")");
+            label.setBackground(stock.isGrowing() ? Color.green : Color.red);
         }
 
         liquidityValue.setText(Stock.getplayerLiquidity());
@@ -220,7 +231,7 @@ public class Window extends JFrame {
         searchedStock.updatePriceHistory();
         Stock.ALL.add(searchedStock);
         Stock.updateCache(searchedStock);
-        playerStocksPanel_addStock(searchedStock);
+        StockLabelFactory(searchedStock);
     }
 
     private void sellStock() {

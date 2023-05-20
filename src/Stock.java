@@ -19,7 +19,10 @@ public class Stock {
     private int count;
     LocalDate oldestAvalaibeDate;
 
-    private static double playerLiquidity = 10_000;
+    private ArrayList<Double> priceHistory;
+    private static double priceHistoryMaxSize = 30; // in days
+
+    private static double playerLiquidity = 1_000;
     private volatile static double playerPortfolioValue = 0;
 
     private static final DecimalFormat dFormater = new DecimalFormat("0.00");
@@ -39,6 +42,11 @@ public class Stock {
         this.description = description;
         this.price = 0;
         this.count = 1;
+
+        priceHistory = new ArrayList<>();
+        for (int i = 0; i <= priceHistoryMaxSize; i++) {
+            priceHistory.add(0.0);
+        }
     }
 
     public void updatePriceHistory() {
@@ -93,8 +101,14 @@ public class Stock {
 
         cache.get(date).forEach((stock, newPrice) -> {
             playerPortfolioValue += (newPrice - stock.price) * stock.count;
-            stock.price = newPrice;
+            stock.setPrice(newPrice);
         });
+    }
+
+    public void setPrice(double value) {
+        this.price = value;
+        priceHistory.add(value);
+        priceHistory.remove(0);
     }
 
     public static void retriveStocksFromDB() {
@@ -138,5 +152,9 @@ public class Stock {
         }
 
         return null;
+    }
+
+    public boolean isGrowing() {
+        return price > priceHistory.get(0);
     }
 }
