@@ -70,4 +70,8 @@ public class GameClock extends Thread {
         }
     }
 
+    public boolean isPaused() {
+        return this.isPaused;
+    }
+
 }

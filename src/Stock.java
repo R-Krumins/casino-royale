@@ -124,6 +124,7 @@ public class Stock {
     public void incrementCount(int value) {
         this.count += value;
         Stock.playerPortfolioValue += this.price * value;
+        icrementPlayerLiquidity(this.price * -value);
     }
 
     public int getCount() {

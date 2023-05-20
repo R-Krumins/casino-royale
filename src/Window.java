@@ -24,10 +24,12 @@ public class Window extends JFrame {
     JLabel result_industry;
     JLabel result_desc;
     JButton buyStockBtn;
+    JButton sellStockBtn;
     JLabel currentDate;
     JPanel playerStocksPanel;
     JLabel porfolioValue;
     JLabel liquidityValue;
+    JButton pauseBtn;
 
     ArrayList<JLabel> playerStocksLabels = new ArrayList<>();
     HashMap<LocalDate, Double> searchedStockPrices;
@@ -79,12 +81,19 @@ public class Window extends JFrame {
         stockLookUpPanel.add(result_industry);
         stockLookUpPanel.add(result_desc);
 
-        buyStockBtn = new JButton("Buy Stock");
+        buyStockBtn = new JButton("Buy");
         buyStockBtn.setVisible(false);
         buyStockBtn.addActionListener(e -> {
             buyStock();
         });
         stockLookUpPanel.add(buyStockBtn);
+
+        sellStockBtn = new JButton("Sell");
+        sellStockBtn.setVisible(false);
+        sellStockBtn.addActionListener(e -> {
+            sellStock();
+        });
+        stockLookUpPanel.add(sellStockBtn);
 
         add(stockLookUpPanel, BorderLayout.CENTER);
     }
@@ -93,7 +102,7 @@ public class Window extends JFrame {
         currentDate = new JLabel();
 
         JPanel topBarPanel = new JPanel();
-        JButton pauseBtn = new JButton("|>");
+        pauseBtn = new JButton("|>");
         JButton x1SpeedBtn = new JButton("1x");
         JButton x3SpeedBtn = new JButton("2x");
         JButton x5SpeedBtn = new JButton("5x");
@@ -176,6 +185,9 @@ public class Window extends JFrame {
             searchedStock = WebScraper.getStock(search);
             searchedStockPrices = WebScraper.getStockHistory(searchedStock.symbol, App.gameClock.getCurrentDate(),
                     App.gameClock.getEndDate());
+            sellStockBtn.setVisible(false);
+        } else {
+            sellStockBtn.setVisible(true);
         }
 
         // show info for searched stock
@@ -198,13 +210,12 @@ public class Window extends JFrame {
     }
 
     private void buyStock() {
-        Stock.icrementPlayerLiquidity(-searchedStock.price);
-
         if (Stock.ALL.contains(searchedStock)) {
             searchedStock.incrementCount(1);
             return;
         }
 
+        Stock.icrementPlayerLiquidity(-searchedStock.price);
         App.db.saveStock(searchedStock);
         searchedStock.updatePriceHistory();
         Stock.ALL.add(searchedStock);
@@ -212,9 +223,16 @@ public class Window extends JFrame {
         playerStocksPanel_addStock(searchedStock);
     }
 
+    private void sellStock() {
+        if (searchedStock.getCount() > 0) {
+            searchedStock.incrementCount(-1);
+        }
+    }
+
     private void changeClockSpeed(int speed) {
         if (speed == 0) {
             App.gameClock.togglePause();
+            pauseBtn.setText(App.gameClock.isPaused() ? "|>" : "||");
         }
     }
 
