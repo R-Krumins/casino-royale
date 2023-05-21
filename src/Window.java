@@ -37,6 +37,7 @@ public class Window extends JFrame {
     JLabel liquidityValue;
     JButton pauseBtn;
     JLabel liquidityError;
+    JButton selectedSpeedBtn;
 
     ArrayList<JLabel> playerStocks = new ArrayList<>();
     HashMap<LocalDate, Double> searchedStockPrices;
@@ -122,27 +123,31 @@ public class Window extends JFrame {
 
         JPanel topBarPanel = new JPanel();
         pauseBtn = new JButton("|>");
-        JButton x1SpeedBtn = new JButton("1x");
-        JButton x3SpeedBtn = new JButton("2x");
-        JButton x5SpeedBtn = new JButton("5x");
+        JButton slowSpeedBtn = new JButton("1x");
+        JButton middleSpeedBtn = new JButton("5x");
+        JButton fastSpeedBtn = new JButton("10x");
+
+        selectedSpeedBtn = slowSpeedBtn;
+        selectedSpeedBtn.setBackground(Color.yellow);
+
         pauseBtn.addActionListener(e -> {
-            changeClockSpeed(0);
+            changeClockSpeed(0, pauseBtn);
         });
-        x1SpeedBtn.addActionListener(e -> {
-            changeClockSpeed(1);
+        slowSpeedBtn.addActionListener(e -> {
+            changeClockSpeed(1, slowSpeedBtn);
         });
-        x3SpeedBtn.addActionListener(e -> {
-            changeClockSpeed(3);
+        middleSpeedBtn.addActionListener(e -> {
+            changeClockSpeed(5, middleSpeedBtn);
         });
-        x5SpeedBtn.addActionListener(e -> {
-            changeClockSpeed(5);
+        fastSpeedBtn.addActionListener(e -> {
+            changeClockSpeed(10, fastSpeedBtn);
         });
 
         topBarPanel.add(currentDate);
         topBarPanel.add(pauseBtn);
-        topBarPanel.add(x1SpeedBtn);
-        topBarPanel.add(x3SpeedBtn);
-        topBarPanel.add(x5SpeedBtn);
+        topBarPanel.add(slowSpeedBtn);
+        topBarPanel.add(middleSpeedBtn);
+        topBarPanel.add(fastSpeedBtn);
 
         add(topBarPanel, BorderLayout.NORTH);
     }
@@ -274,11 +279,17 @@ public class Window extends JFrame {
         }
     }
 
-    private void changeClockSpeed(int speed) {
+    private void changeClockSpeed(int speed, JButton src) {
         if (speed == 0) {
             App.gameClock.togglePause();
             pauseBtn.setText(App.gameClock.isPaused() ? "|>" : "||");
+            return;
         }
+
+        App.gameClock.clockSpeed = speed;
+        selectedSpeedBtn.setBackground(null);
+        selectedSpeedBtn = src;
+        selectedSpeedBtn.setBackground(Color.yellow);
     }
 
     public void setCurrentDate(String date) {

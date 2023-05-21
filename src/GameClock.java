@@ -4,11 +4,14 @@ public class GameClock extends Thread {
 
     private LocalDate currentDate; // current game date
     private LocalDate endDate; // end date for game (real world current time)
-    private boolean isPaused = true;;
+    private boolean isPaused = true;
+
+    public int clockSpeed; // in days skipped each tick
 
     public GameClock(LocalDate currentDate) {
         this.currentDate = currentDate;
         this.endDate = LocalDate.now();
+        this.clockSpeed = 1;
     }
 
     @Override
@@ -40,7 +43,7 @@ public class GameClock extends Thread {
     }
 
     private void updateDate() {
-        currentDate = currentDate.plusDays(1);
+        currentDate = currentDate.plusDays(clockSpeed);
         App.window.setCurrentDate(currentDate.toString());
     }
 
