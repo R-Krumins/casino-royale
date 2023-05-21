@@ -6,7 +6,8 @@ create table stocks (
 	industry varchar(64),
 	description text,
 	history_startDate date,
-	history_endDate date
+	history_endDate date,
+	count int
 );
 
 create table priceHistory (

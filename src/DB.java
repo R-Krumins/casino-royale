@@ -40,15 +40,29 @@ public class DB {
 
     public void saveStock(Stock stock) {
         try {
-            preparedStmt = con.prepareStatement("INSERT INTO stocks VALUES (?, ?, ?, ?)");
+            preparedStmt = con.prepareStatement(
+                    "INSERT INTO stocks (symbol, company_name, industry, description, count) VALUES (?, ?, ?, ?, ?);");
             preparedStmt.setString(1, stock.symbol);
             preparedStmt.setString(2, stock.companyName);
             preparedStmt.setString(3, stock.industry);
             preparedStmt.setString(4, stock.description);
+            preparedStmt.setInt(5, stock.getCount());
 
             preparedStmt.executeUpdate();
             System.out.println("Saved " + stock.symbol + " to DB.");
         } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void updateStockCount(Stock stock) {
+        String query = "UPDATE stocks SET count = " + stock.getCount() + " WHERE symbol = '" + stock.symbol + "'";
+
+        try {
+            executeUpdate(query);
+        } catch (Exception e) {
+            System.out.println("Unable to update " + stock.symbol + " count in DB");
             e.printStackTrace();
         }
 
@@ -135,9 +149,9 @@ public class DB {
                 String compnayName = results.getString("company_name");
                 String industry = results.getString("industry");
                 String description = results.getString("description");
+                int count = results.getInt("count");
 
-                stocks.add(new Stock(symbol, compnayName, industry, description));
-
+                stocks.add(new Stock(symbol, compnayName, industry, description, count));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -158,8 +172,9 @@ public class DB {
                 String compnayName = results.getString("company_name");
                 String industry = results.getString("industry");
                 String description = results.getString("description");
+                int count = results.getInt("count");
 
-                stock = new Stock(symbol, compnayName, industry, description);
+                stock = new Stock(symbol, compnayName, industry, description, count);
 
             }
         } catch (Exception e) {
@@ -211,7 +226,8 @@ public class DB {
                 Stock stock = Stock.getBySymbol(result.getString("symbol"));
                 Double price = result.getDouble("price");
 
-                history.get(date).put(stock, price);
+                if (history.get(date) != null)
+                    history.get(date).put(stock, price);
             }
         } catch (SQLException e) {
             System.out.println("Unable to proccess price history");

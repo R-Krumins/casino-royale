@@ -13,6 +13,9 @@ import javax.swing.border.LineBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +46,14 @@ public class Window extends JFrame {
     public Window() {
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setTitle("Stock Trader 3000");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent event) {
+                closeWindow();
+            }
+        });
+
         init_components();
         setVisible(true);
     }
@@ -226,12 +236,13 @@ public class Window extends JFrame {
             return;
         }
 
-        Stock.icrementPlayerLiquidity(-searchedStock.price);
         App.db.saveStock(searchedStock);
         searchedStock.updatePriceHistory();
         Stock.ALL.add(searchedStock);
         Stock.updateCache(searchedStock);
-        StockLabelFactory(searchedStock);
+        playerStocksPanel.add(StockLabelFactory(searchedStock));
+
+        // Stock.icrementPlayerLiquidity(-searchedStockPrices.get(App.gameClock.getCurrentDate()));
     }
 
     private void sellStock() {
@@ -249,5 +260,17 @@ public class Window extends JFrame {
 
     public void setCurrentDate(String date) {
         currentDate.setText(date);
+    }
+
+    private void closeWindow() {
+        System.out.println("Closing window...");
+
+        Stock.ALL.forEach(stock -> {
+            App.db.updateStockCount(stock);
+        });
+
+        dispose();
+        System.out.println("Window closed.");
+        System.exit(0);
     }
 }

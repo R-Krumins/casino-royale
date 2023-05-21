@@ -49,6 +49,11 @@ public class Stock {
         }
     }
 
+    public Stock(String symbol, String companyName, String industry, String description, int count) {
+        this(symbol, companyName, industry, description);
+        this.incrementCount(count - 1);
+    }
+
     public void updatePriceHistory() {
         // game dates
         LocalDate gameCurrentDate = App.gameClock.getCurrentDate();
