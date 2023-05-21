@@ -79,6 +79,17 @@ public class Stock {
     private void getAndSavePriceHistory(LocalDate fromDate, LocalDate toDate) {
         HashMap<LocalDate, Double> history = WebScraper.getStockHistory(this.symbol, fromDate, toDate);
         App.db.savePriceHistory(history, this.symbol, fromDate, toDate);
+
+        // set initial price for stock
+        for (int i = 0; i < 60; i++) {
+            try {
+                this.price = history.get(fromDate.plusDays(i));
+                playerPortfolioValue += this.price;
+                return;
+            } catch (Exception e) {
+            }
+        }
+
     }
 
     public static void cacheNext() {
@@ -97,6 +108,7 @@ public class Stock {
     }
 
     public static void updatePrices(LocalDate date) {
+        // check if cache needs to be updated
         if (App.gameClock.getCurrentDate().isAfter(cacheNextThresholdDate)) {
             cacheNextThresholdDate = cacheNextThresholdDate.plusDays(chacheSize);
             new Thread(() -> {
@@ -104,6 +116,7 @@ public class Stock {
             }).start();
         }
 
+        // update price from cache
         cache.get(date).forEach((stock, newPrice) -> {
             playerPortfolioValue += (newPrice - stock.price) * stock.count;
             stock.setPrice(newPrice);

@@ -81,7 +81,7 @@ public class Window extends JFrame {
 
         JButton searchStockBtn = new JButton("Search");
         searchStockBtn.addActionListener(e -> {
-            searchForStock();
+            searchForStock(searchStockBox.getText().toUpperCase());
         });
         topRow.add(searchStockBtn);
 
@@ -196,9 +196,8 @@ public class Window extends JFrame {
         porfolioValue.setText(Stock.getplayerPortfolioValue());
     }
 
-    private void searchForStock() {
+    private void searchForStock(String search) {
 
-        String search = searchStockBox.getText().toUpperCase();
         // first check if this stock is already owned by the player
         searchedStock = Stock.getBySymbol(search);
         // if no find it from the web
@@ -233,6 +232,10 @@ public class Window extends JFrame {
     private void buyStock() {
         if (Stock.ALL.contains(searchedStock)) {
             searchedStock.incrementCount(1);
+
+            if (App.gameClock.isPaused())
+                updateWindow(App.gameClock.getCurrentDate());
+
             return;
         }
 
@@ -241,8 +244,12 @@ public class Window extends JFrame {
         Stock.ALL.add(searchedStock);
         Stock.updateCache(searchedStock);
         playerStocksPanel.add(StockLabelFactory(searchedStock));
+        Stock.icrementPlayerLiquidity(-searchedStock.price);
 
-        // Stock.icrementPlayerLiquidity(-searchedStockPrices.get(App.gameClock.getCurrentDate()));
+        // update GUI
+        searchForStock(searchedStock.symbol);
+        if (App.gameClock.isPaused())
+            updateWindow(App.gameClock.getCurrentDate());
     }
 
     private void sellStock() {
