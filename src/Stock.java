@@ -1,14 +1,7 @@
-import java.sql.SQLException;
 import java.text.DecimalFormat;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class Stock {
     String symbol;

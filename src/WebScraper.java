@@ -1,9 +1,6 @@
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.HashMap;
 
 import org.json.JSONArray;
@@ -12,8 +9,8 @@ import org.jsoup.Jsoup;
 
 public class WebScraper {
 
-    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-dd-MM");
-    private static String apiKey = "UEWDdbC-SQXSgRhsbVzH";
+    // private static DateTimeFormatter formatter =
+    // DateTimeFormatter.ofPattern("yyyy-dd-MM");
 
     public static Stock getStock(String stockSymbol) {
         String url = "https://api.nasdaq.com/api/company/" + stockSymbol + "/company-profile";
@@ -32,14 +29,6 @@ public class WebScraper {
         String description = validStock.getJSONObject("CompanyDescription").getString("value");
 
         Stock stock = new Stock(symbol, companyName, industry, description);
-
-        // try {
-        // stock.oldestAvalaibeDate =
-        // WebScraper.getStockOldestAvalibleDate(stockSymbol);
-        // } catch (Exception e) {
-        // System.out.println("Unable to retrieve info for oldest avaliable date for " +
-        // stockSymbol);
-        // }
 
         return stock;
 
@@ -108,20 +97,4 @@ public class WebScraper {
         return date;
 
     }
-
-    private static JSONObject getTestResponse() {
-        return new JSONObject();
-    }
-
-    // private static Stock createStock(JSONObject json) {
-    // String id = json.getString("symbol");
-    // String companyName = json.getString("companyName");
-    // double price = Double.parseDouble(json
-    // .getJSONObject("primaryData")
-    // .getString("lastSalePrice")
-    // .replace("$", ""));
-
-    // return new Stock(id, companyName, price);
-
-    // }
 }

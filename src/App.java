@@ -1,11 +1,4 @@
-
-import java.awt.FontMetrics;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 
 public class App {
 
@@ -23,9 +16,6 @@ public class App {
         window = new Window();
 
         gameClock.start();
-
-        // Date date = new GregorianCalendar(2014, Calendar.FEBRUARY, 11).getTime();
-        // db.savePriceHistory(WebScraper.getStockHistory("AAPL", date), "AAPL");
 
     }
 }

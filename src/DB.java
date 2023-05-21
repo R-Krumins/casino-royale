@@ -5,14 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.sql.Date;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class DB {
     // info for DB connection
