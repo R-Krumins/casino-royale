@@ -22,11 +22,12 @@ public class Stock {
     private ArrayList<Double> priceHistory;
     private static double priceHistoryMaxSize = 30; // in days
 
-    private static double playerLiquidity = 1_000;
-    private volatile static double playerPortfolioValue = 0;
-
     private static final DecimalFormat dFormater = new DecimalFormat("0.00");
     public static ArrayList<Stock> ALL = new ArrayList<>();
+
+    // player info
+    private static double playerLiquidity = 1;
+    private volatile static double playerPortfolioValue = 0;
 
     // cache and its parameters
     private static HashMap<LocalDate, HashMap<Stock, Double>> cache = new HashMap<>();
@@ -137,8 +138,12 @@ public class Stock {
         return "$" + dFormater.format(this.price);
     }
 
-    public static String getplayerLiquidity() {
+    public static String getplayerLiquidityString() {
         return "$" + dFormater.format(playerLiquidity);
+    }
+
+    public static double getplayerLiquidity() {
+        return playerLiquidity;
     }
 
     public static void icrementPlayerLiquidity(double value) {

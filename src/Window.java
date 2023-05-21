@@ -39,6 +39,7 @@ public class Window extends JFrame {
     JLabel porfolioValue;
     JLabel liquidityValue;
     JButton pauseBtn;
+    JLabel liquidityError;
 
     ArrayList<JLabel> playerStocks = new ArrayList<>();
     HashMap<LocalDate, Double> searchedStockPrices;
@@ -111,6 +112,11 @@ public class Window extends JFrame {
         });
         stockLookUpPanel.add(sellStockBtn);
 
+        liquidityError = new JLabel("Not enough liquidity for purchase!");
+        liquidityError.setForeground(Color.red);
+        liquidityError.setVisible(false);
+        stockLookUpPanel.add(liquidityError);
+
         add(stockLookUpPanel, BorderLayout.CENTER);
     }
 
@@ -162,7 +168,7 @@ public class Window extends JFrame {
         JLabel porfolioText = new JLabel("Porfolio value:");
         porfolioValue = new JLabel("$0");
         JLabel liquidityText = new JLabel("Liquidity:");
-        liquidityValue = new JLabel(Stock.getplayerLiquidity());
+        liquidityValue = new JLabel(Stock.getplayerLiquidityString());
 
         playerStatsPanel.add(porfolioText);
         playerStatsPanel.add(porfolioValue);
@@ -192,8 +198,13 @@ public class Window extends JFrame {
             label.setBackground(stock.isGrowing() ? Color.green : Color.red);
         }
 
-        liquidityValue.setText(Stock.getplayerLiquidity());
+        liquidityValue.setText(Stock.getplayerLiquidityString());
         porfolioValue.setText(Stock.getplayerPortfolioValue());
+    }
+
+    private void updateWindow() {
+        if (App.gameClock.isPaused())
+            updateWindow(App.gameClock.getCurrentDate());
     }
 
     private void searchForStock(String search) {
@@ -227,18 +238,26 @@ public class Window extends JFrame {
             buyStockBtn.setVisible(false);
         }
 
+        liquidityError.setVisible(false);
     }
 
     private void buyStock() {
+        // check if player can afford to buy
+        if (searchedStock.price > Stock.getplayerLiquidity()) {
+            liquidityError.setVisible(true);
+            return;
+        } else {
+            liquidityError.setVisible(false);
+        }
+
+        // check if player alrady owns the searched stock
         if (Stock.ALL.contains(searchedStock)) {
             searchedStock.incrementCount(1);
-
-            if (App.gameClock.isPaused())
-                updateWindow(App.gameClock.getCurrentDate());
-
+            updateWindow();
             return;
         }
 
+        // procedure for buying new stock
         App.db.saveStock(searchedStock);
         searchedStock.updatePriceHistory();
         Stock.ALL.add(searchedStock);
@@ -248,13 +267,13 @@ public class Window extends JFrame {
 
         // update GUI
         searchForStock(searchedStock.symbol);
-        if (App.gameClock.isPaused())
-            updateWindow(App.gameClock.getCurrentDate());
+        updateWindow();
     }
 
     private void sellStock() {
         if (searchedStock.getCount() > 0) {
             searchedStock.incrementCount(-1);
+            updateWindow();
         }
     }
 
