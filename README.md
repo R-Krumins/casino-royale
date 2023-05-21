@@ -1,18 +1,18 @@
-## Getting Started
+## Casino Royale
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+Can you be the next Warren Buffett? Or just a typical r/wallstreetbets member? Welcome to Casino Royale!
 
 ## Folder Structure
-
-The workspace contains two folders by default, where:
 
 - `src`: the folder to maintain sources
 - `lib`: the folder to maintain dependencies
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+## Documentation
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
+Docs and a demo video is provided within repo files
 
-## Dependency Management
+## DB
 
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+The function of the application necessities a PostgreSQL database
+
+> DB can be setup via the createDB.sql file and modifying url, user and password fields in DB.java
