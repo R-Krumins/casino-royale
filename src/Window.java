@@ -193,11 +193,16 @@ public class Window extends JFrame {
             result_price.setText("$" + searchedStockPrices.get(date).toString());
 
         for (int i = 0; i < Stock.ALL.size(); i++) {
-            Stock stock = Stock.ALL.get(i);
-            JLabel label = playerStocks.get(i);
+            try {
+                Stock stock = Stock.ALL.get(i);
+                JLabel label = playerStocks.get(i);
 
-            label.setText(stock.symbol + " " + stock.getPriceString() + " (x" + stock.getCount() + ")");
-            label.setBackground(stock.isGrowing() ? Color.green : Color.red);
+                label.setText(stock.symbol + " " + stock.getPriceString() + " (x" + stock.getCount() + ")");
+                label.setBackground(stock.isGrowing() ? Color.green : Color.red);
+            } catch (IndexOutOfBoundsException e) {
+                System.out.println("Concurrency error");
+            }
+
         }
 
         liquidityValue.setText(Stock.getplayerLiquidityString());
@@ -211,14 +216,19 @@ public class Window extends JFrame {
 
     private void searchForStock(String search) {
 
+        searchedStockPrices = null;
+
         // first check if this stock is already owned by the player
         searchedStock = Stock.getBySymbol(search);
-        // if no find it from the web
+
+        // if no, find it from the web
         if (searchedStock == null) {
             searchedStock = WebScraper.getStock(search);
-            searchedStockPrices = WebScraper.getStockHistory(searchedStock.symbol, App.gameClock.getCurrentDate(),
-                    App.gameClock.getEndDate());
             sellStockBtn.setVisible(false);
+
+            if (searchedStock != null)
+                searchedStockPrices = WebScraper.getStockHistory(searchedStock.symbol, App.gameClock.getCurrentDate(),
+                        App.gameClock.getEndDate());
         } else {
             sellStockBtn.setVisible(true);
         }

@@ -9,7 +9,7 @@ Can you be the next Warren Buffett? Or just a typical r/wallstreetbets member? W
 
 ## Documentation
 
-Docs and a demo video is provided within repo files
+Docs provided within repo files
 
 ## DB
 

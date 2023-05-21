@@ -19,7 +19,7 @@ public class Stock {
     public static ArrayList<Stock> ALL = new ArrayList<>();
 
     // player info
-    private static double playerLiquidity = 1;
+    private static double playerLiquidity = 5_000;
     private volatile static double playerPortfolioValue = 0;
 
     // cache and its parameters
